@@ -1,121 +1,67 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import type { Note } from './types/note'
+import NoteForm from './components/NoteForm'
+import NoteList from './components/NoteList'
 import './App.css'
 
+// Temporary mock data so the UI can be reviewed before the backend API exists.
+const MOCK_NOTES: Note[] = [
+  {
+    id: 1,
+    title: 'Welcome to Notes',
+    description: 'This is a sample note to show how the app looks with content.',
+    created_at: '2026-08-10T09:00:00.000Z',
+  },
+  {
+    id: 2,
+    title: 'Grocery list',
+    description: 'Milk, eggs, bread, coffee.',
+    created_at: '2026-08-12T14:30:00.000Z',
+  },
+  {
+    id: 3,
+    title: 'Project ideas',
+    description: 'Sketch out the API routes and database schema this weekend.',
+    created_at: '2026-08-14T18:15:00.000Z',
+  },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [notes, setNotes] = useState<Note[]>(MOCK_NOTES)
+
+  const handleCreate = (title: string, description: string) => {
+    const newNote: Note = {
+      id: Date.now(),
+      title,
+      description,
+      created_at: new Date().toISOString(),
+    }
+    // TODO: replace with a POST request to the backend API once it exists.
+    setNotes((prev) => [newNote, ...prev])
+  }
+
+  const handleDelete = (id: number) => {
+    // TODO: replace with a DELETE request to the backend API once it exists.
+    setNotes((prev) => prev.filter((note) => note.id !== id))
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <div className="page">
+      <header className="page-header">
+        <h1>Notes</h1>
+        <p className="subtitle">A simple full-stack notes application</p>
+      </header>
+
+      <section className="card">
+        <h2>Create Note</h2>
+        <NoteForm onCreate={handleCreate} />
       </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+      <section className="notes-section">
+        <h2>Your Notes</h2>
+        <NoteList notes={notes} onDelete={handleDelete} />
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </div>
   )
 }
 
