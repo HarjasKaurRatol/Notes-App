@@ -22,7 +22,7 @@ Each note has an `id`, `title`, `description`, and `created_at` timestamp.
 ## Repository structure
 
 ```
-Notes/
+Notes-App/
 ├── backend/                  Express API
 │   ├── src/
 │   │   ├── db.js              Postgres connection pool + table creation
@@ -56,8 +56,8 @@ Notes/
 ### With Docker Compose (recommended — this is what a reviewer should use)
 
 ```bash
-git clone <repository>
-cd Notes
+git clone https://github.com/HarjasKaurRatol/Notes-App.git
+cd Notes-App
 docker compose up --build
 ```
 
@@ -113,6 +113,5 @@ Same URLs as above: UI on **http://localhost:5173**, API on **http://localhost:3
 - **No automated test suite.** The API and the create/view/delete flow were verified manually — full create → reload → delete → reload cycles driven through the actual UI in a browser, plus direct `psql` checks — but there's no `npm test` a reviewer can run.
 - **No editing of existing notes**, only create/delete, per the exercise scope.
 - **Minimal validation**: the backend only checks that `title` is non-empty; there's no length limit enforced beyond the database column's `VARCHAR(255)`, and the frontend does no additional validation beyond trimming whitespace.
-- **A couple of unused leftover files from initial scaffolding** (`.js` duplicates of a few `.tsx`/`.ts` files in `frontend/src/`) are still in the repo and should be removed — they aren't part of the actual build (`index.html` loads `main.tsx`).
 - **`docker-compose.yaml` credentials are development defaults**, not meant for anything beyond local use.
 - **No HTTPS/reverse proxy in front of the containers** — each service's port is published directly to the host, which is fine for local/reviewer use but not how this would be deployed.
