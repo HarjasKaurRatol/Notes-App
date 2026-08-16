@@ -10,7 +10,38 @@ services:
       - "5432:5432"
     volumes:
       - notes_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notesuser -d notesdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
+  backend:
+    build: ./backend
+    container_name: notes-backend
+    environment:
+      PORT: 3001
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: notesuser
+      PGPASSWORD: notespassword
+      PGDATABASE: notesdb
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    container_name: notes-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   notes_data:
