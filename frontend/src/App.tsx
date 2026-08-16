@@ -1,48 +1,52 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Note } from './types/note'
 import NoteForm from './components/NoteForm'
 import NoteList from './components/NoteList'
+import { getNotes, createNote, deleteNote } from './api/notes'
 import './App.css'
 
-// Temporary mock data so the UI can be reviewed before the backend API exists.
-const MOCK_NOTES: Note[] = [
-  {
-    id: 1,
-    title: 'Welcome to Notes',
-    description: 'This is a sample note to show how the app looks with content.',
-    created_at: '2026-08-10T09:00:00.000Z',
-  },
-  {
-    id: 2,
-    title: 'Grocery list',
-    description: 'Milk, eggs, bread, coffee.',
-    created_at: '2026-08-12T14:30:00.000Z',
-  },
-  {
-    id: 3,
-    title: 'Project ideas',
-    description: 'Sketch out the API routes and database schema this weekend.',
-    created_at: '2026-08-14T18:15:00.000Z',
-  },
-]
-
 function App() {
-  const [notes, setNotes] = useState<Note[]>(MOCK_NOTES)
+  const [notes, setNotes] = useState<Note[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleCreate = (title: string, description: string) => {
-    const newNote: Note = {
-      id: Date.now(),
-      title,
-      description,
-      created_at: new Date().toISOString(),
+  useEffect(() => {
+    let isMounted = true
+
+    getNotes()
+      .then((data) => {
+        if (isMounted) setNotes(data)
+      })
+      .catch((err: unknown) => {
+        if (isMounted) setError(err instanceof Error ? err.message : 'Failed to load notes')
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
     }
-    // TODO: replace with a POST request to the backend API once it exists.
-    setNotes((prev) => [newNote, ...prev])
+  }, [])
+
+  const handleCreate = async (title: string, description: string) => {
+    setError(null)
+    try {
+      const newNote = await createNote(title, description)
+      setNotes((prev) => [newNote, ...prev])
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create note')
+    }
   }
 
-  const handleDelete = (id: number) => {
-    // TODO: replace with a DELETE request to the backend API once it exists.
-    setNotes((prev) => prev.filter((note) => note.id !== id))
+  const handleDelete = async (id: number) => {
+    setError(null)
+    try {
+      await deleteNote(id)
+      setNotes((prev) => prev.filter((note) => note.id !== id))
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete note')
+    }
   }
 
   return (
@@ -52,6 +56,8 @@ function App() {
         <p className="subtitle">A simple full-stack notes application</p>
       </header>
 
+      {error && <p className="error-banner">{error}</p>}
+
       <section className="card">
         <h2>Create Note</h2>
         <NoteForm onCreate={handleCreate} />
@@ -59,7 +65,11 @@ function App() {
 
       <section className="notes-section">
         <h2>Your Notes</h2>
-        <NoteList notes={notes} onDelete={handleDelete} />
+        {isLoading ? (
+          <p className="empty-state">Loading notes…</p>
+        ) : (
+          <NoteList notes={notes} onDelete={handleDelete} />
+        )}
       </section>
     </div>
   )
